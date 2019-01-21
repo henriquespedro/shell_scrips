@@ -1,0 +1,1 @@
+gdal_translate -ot Byte -scale -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR -co "TILED=YES" XXX.tif output.tif
