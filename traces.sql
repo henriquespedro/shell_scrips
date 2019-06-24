@@ -2,7 +2,6 @@
 
 CREATE OR REPLACE FUNCTION aa.malhada_close(integer)
 RETURNS geometry
-LANGUAGE sql
 AS $BODY$
 WITH RECURSIVE walk_network(id, shape) AS (
     SELECT "SERIALID" as id, shape, array["SERIALID"] as all_parents FROM "aa"."co" WHERE "SERIALID" = $1
@@ -19,14 +18,13 @@ LANGUAGE sql IMMUTABLE
 
 CREATE OR REPLACE FUNCTION aa.malhada_all(integer)
 RETURNS geometry
-LANGUAGE sql
 AS $BODY$
 WITH RECURSIVE walk_network(id, shape) AS (
     SELECT "SERIALID" as id, shape, array["SERIALID"] as all_parents FROM "aa"."co" WHERE "SERIALID" = $1
   UNION ALL
     SELECT n."SERIALID", n.shape, w.all_parents||n."SERIALID"
     FROM "aa"."co" n, walk_network w
-    WHERE ST_intersects(w.shape,n.shape) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.cr),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.ee),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.eb),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.rv),n.shape)) ='f') AND n."SERIALID" <> ALL (w.all_parents)
+    WHERE ST_intersects(w.shape,n.shape) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.vs),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.vc),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.vd),n.shape)) ='f') AND n."SERIALID" <> ALL (w.all_parents)
   )
 SELECT ST_Union(shape)
 FROM walk_network
@@ -36,14 +34,13 @@ LANGUAGE sql IMMUTABLE
 
 CREATE OR REPLACE FUNCTION aa.malhada(integer)
 RETURNS geometry
-LANGUAGE sql
 AS $BODY$
 WITH RECURSIVE walk_network(id, shape) AS (
     SELECT "SERIALID" as id, shape, array["SERIALID"] as all_parents FROM "aa"."co" WHERE "SERIALID" = $1
   UNION ALL
     SELECT n."SERIALID", n.shape, w.all_parents||n."SERIALID"
     FROM "aa"."co" n, walk_network w
-    WHERE ST_intersects(w.shape,n.shape) AND n."SERIALID" <> ALL (w.all_parents)
+    WHERE ST_intersects(w.shape,n.shape) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.cr),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.ee),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.eb),n.shape) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.rv),n.shape)) ='f') AND n."SERIALID" <> ALL (w.all_parents)
   )
 SELECT ST_Union(shape)
 FROM walk_network
@@ -77,7 +74,7 @@ WITH RECURSIVE walk_network(id, shape) AS (
   UNION ALL
     SELECT n."SERIALID", n.shape, w.all_parents||n."SERIALID"
     FROM "aa"."co" n, walk_network w
-    WHERE ST_intersects(ST_EndPoint(w.shape),ST_StartPoint(n.shape)) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.cr),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.ee),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.eb),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.rv),ST_StartPoint(n.shape))) ='f') AND n."SERIALID" <> ALL (w.all_parents)
+    WHERE ST_intersects(ST_EndPoint(w.shape),ST_StartPoint(n.shape)) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.vs),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.vd),ST_StartPoint(n.shape)) or ST_Intersects((SELECT ST_UNION(shape) FROM aa.vc),ST_StartPoint(n.shape))) ='f') AND n."SERIALID" <> ALL (w.all_parents)
   )
 SELECT ST_Union(shape)
 FROM walk_network
@@ -93,7 +90,7 @@ WITH RECURSIVE walk_network(id, shape) AS (
   UNION ALL
     SELECT n."SERIALID", n.shape, w.all_parents||n."SERIALID"
     FROM "aa"."co" n, walk_network w
-    WHERE ST_intersects(ST_EndPoint(w.shape),ST_StartPoint(n.shape)) AND n."SERIALID" <> ALL (w.all_parents)
+    WHERE ST_intersects(ST_EndPoint(w.shape),ST_StartPoint(n.shape)) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.cr),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.ee),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.eb),ST_StartPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.rv),ST_StartPoint(n.shape))) ='f') AND n."SERIALID" <> ALL (w.all_parents)
   )
 SELECT ST_Union(shape)
 FROM walk_network
@@ -126,7 +123,7 @@ WITH RECURSIVE walk_network(id, shape) AS (
   UNION ALL
     SELECT n."SERIALID", n.shape, w.all_parents||n."SERIALID"
     FROM "aa"."co" n, walk_network w
-    WHERE ST_intersects(ST_StartPoint(w.shape),ST_EndPoint(n.shape)) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.cr),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.ee),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.eb),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.rv),ST_EndPoint(n.shape))) ='f') AND n."SERIALID" <> ALL (w.all_parents)
+    WHERE ST_intersects(ST_StartPoint(w.shape),ST_EndPoint(n.shape)) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.vs),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.vd),ST_EndPoint(n.shape)) or ST_Intersects((SELECT ST_UNION(shape) FROM aa.vc),ST_EndPoint(n.shape))) ='f') AND n."SERIALID" <> ALL (w.all_parents)
   )
 SELECT ST_Union(shape)
 FROM walk_network
@@ -142,7 +139,7 @@ WITH RECURSIVE walk_network(id, shape) AS (
   UNION ALL
     SELECT n."SERIALID", n.shape, w.all_parents||n."SERIALID"
     FROM "aa"."co" n, walk_network w
-    WHERE ST_intersects(ST_StartPoint(w.shape),ST_EndPoint(n.shape)) AND n."SERIALID" <> ALL (w.all_parents)
+    WHERE ST_intersects(ST_StartPoint(w.shape),ST_EndPoint(n.shape)) AND ((ST_Intersects((SELECT ST_UNION(shape) FROM aa.cr),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.ee),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.eb),ST_EndPoint(n.shape)) OR ST_Intersects((SELECT ST_UNION(shape) FROM aa.rv),ST_EndPoint(n.shape))) ='f') AND n."SERIALID" <> ALL (w.all_parents)
   )
 SELECT ST_Union(shape)
 FROM walk_network
