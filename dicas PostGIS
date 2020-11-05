@@ -1,0 +1,4 @@
+## Retirar Z do campo de geometria ##
+ALTER TABLE wifi.fatima_cova_iria  
+  ALTER COLUMN geom TYPE geometry(POINT, 3763) 
+    USING ST_Force_2D(geom);
