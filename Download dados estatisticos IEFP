@@ -1,0 +1,83 @@
+
+import os
+import requests
+import pyexcel_ods
+import psycopg2
+
+# Define the path to the ODS file and the URL to download it from
+ods_path = '/path/to/your/ods/file.ods'
+ods_url = 'https://www.iefp.pt/documents/10181/11796120/SIE+-+Desemprego+registado+por+concelhos+mar%C3%A7o+2023.ods'
+
+# Define the PostgreSQL connection parameters
+db_params = {
+    'host': 'your_host',
+    'port': 'your_port',
+    'database': 'your_database',
+    'user': 'your_username',
+    'password': 'your_password'
+}
+
+# Define the database table name
+table_name = 'your_table_name'
+
+# Define the column mapping between the ODS file and the database table
+column_mapping = {
+    'Column1': 'column_name_1',
+    'Column2': 'column_name_2',
+    'Column3': 'column_name_3'
+}
+
+# Check if the ODS file exists
+if os.path.exists(ods_path):
+    print(f'ODS file {ods_path} already exists.')
+else:
+    # Download the ODS file from the URL
+    response = requests.get(ods_url)
+    with open(ods_path, 'wb') as f:
+        f.write(response.content)
+    print(f'Downloaded ODS file to {ods_path}.')
+
+# Load the ODS file into a dictionary
+data = pyexcel_ods.get_data(ods_path)
+
+# Get the data from the first sheet
+sheet_name = list(data.keys())[0]
+sheet_data = data[sheet_name]
+
+# Create a list of tuples with the data and the column mapping
+data_list = []
+for row in sheet_data:
+    data_dict = {}
+    for i, column in enumerate(row):
+        if column_mapping.get(f'Column{i+1}'):
+            data_dict[column_mapping[f'Column{i+1}']] = column
+    data_list.append(tuple(data_dict.values()))
+
+# Connect to the PostgreSQL database
+conn = psycopg2.connect(**db_params)
+cur = conn.cursor()
+
+# Define the SQL query to insert the data into the table
+columns = ', '.join(data_dict.keys())
+values = ', '.join(['%s' for i in range(len(data_dict))])
+query = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"
+
+# Execute the SQL query with the data
+cur.executemany(query, data_list)
+
+# Commit the changes to the database and close the cursor and connection
+conn.commit()
+cur.close()
+conn.close()
+
+print(f'{len(data_list)} rows inserted into {table_name} table.')
+
+
+
+In this example, the script first defines the path to the ODS file and the URL to download it from, as well as the PostgreSQL connection parameters, the database table name, and the column mapping between the ODS file and the database table.
+
+The script then checks if the ODS file exists and downloads it if it doesn't. It then loads the ODS file into a dictionary and gets the data from the first sheet. It creates a list of tuples with the data and the column mapping, and connects to the PostgreSQL database.
+
+It then defines the SQL query to insert the data into the table and executes it with the data using executemany(). It commits the changes to the database and closes the cursor and connection.
+
+Finally, the script prints the number of rows inserted into the table.
