@@ -1,0 +1,22 @@
+To run a PHP script in the crontab on Ubuntu, you can follow these steps:
+
+1. Open a terminal on your Ubuntu system.
+
+2. Type the following command to open the crontab file for the current user:
+    crontab -e
+    
+3. This will open the crontab file in the default editor. Add a new line to the file with the following format: 
+    * * * * * /usr/bin/php /path/to/your/php/script.php
+This line specifies the command to be executed by the crontab. The first five fields specify the time and frequency of execution. In this example, the asterisks indicate that the command will be executed every minute of every hour of every day. You can modify these fields to schedule the execution at the desired time and frequency.
+
+The last field specifies the command to be executed. In this example, the command is /usr/bin/php /path/to/your/php/script.php, which specifies that the php executable located at /usr/bin/php should be used to execute the PHP script located at /path/to/your/php/script.php. Replace /path/to/your/php/script.php with the actual path to your PHP script.
+
+4. Save the crontab file and exit the editor.
+
+The PHP script specified in the crontab will now be executed at the scheduled time and frequency. You can use the tail command to view the output of the script to verify that it is executing correctly.
+For example, you can run the following command in the terminal to view the last 10 lines of output from the script:
+    tail -n 10 /path/to/your/php/script.log
+
+This assumes that the PHP script is configured to log its output to a file located at /path/to/your/php/script.log.
+
+Replace /path/to/your/php/script.log with the actual path to the log file.
