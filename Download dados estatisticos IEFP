@@ -22,9 +22,16 @@ table_name = 'your_table_name'
 
 # Define the column mapping between the ODS file and the database table
 column_mapping = {
-    'Column1': 'column_name_1',
-    'Column2': 'column_name_2',
-    'Column3': 'column_name_3'
+    'Sheet1': {
+        'Column1': 'column_name_1',
+        'Column2': 'column_name_2',
+        'Column3': 'column_name_3'
+    },
+    'Sheet2': {
+        'Column1': 'column_name_4',
+        'Column2': 'column_name_5',
+        'Column3': 'column_name_6'
+    }
 }
 
 # Check if the ODS file exists
@@ -40,39 +47,42 @@ else:
 # Load the ODS file into a dictionary
 data = pyexcel_ods.get_data(ods_path)
 
-# Get the data from the first sheet
-sheet_name = list(data.keys())[0]
-sheet_data = data[sheet_name]
-
-# Create a list of tuples with the data and the column mapping
-data_list = []
-for row in sheet_data:
-    data_dict = {}
-    for i, column in enumerate(row):
-        if column_mapping.get(f'Column{i+1}'):
-            data_dict[column_mapping[f'Column{i+1}']] = column
-    data_list.append(tuple(data_dict.values()))
-
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(**db_params)
 cur = conn.cursor()
 
-# Define the SQL query to insert the data into the table
-columns = ', '.join(data_dict.keys())
-values = ', '.join(['%s' for i in range(len(data_dict))])
-query = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"
+# Loop over all the sheets in the ODS file
+for sheet_name in data.keys():
+    sheet_data = data[sheet_name]
 
-# Execute the SQL query with the data
-cur.executemany(query, data_list)
+    # Get the column mapping for this sheet
+    sheet_mapping = column_mapping.get(sheet_name)
 
-# Commit the changes to the database and close the cursor and connection
-conn.commit()
+    # Create a list of tuples with the data and the column mapping
+    data_list = []
+    for row in sheet_data:
+        data_dict = {}
+        for i, column in enumerate(row):
+            if sheet_mapping and sheet_mapping.get(f'Column{i+1}'):
+                data_dict[sheet_mapping[f'Column{i+1}']] = column
+        data_list.append(tuple(data_dict.values()))
+
+    # Define the SQL query to insert the data into the table
+    columns = ', '.join(data_dict.keys())
+    values = ', '.join(['%s' for i in range(len(data_dict))])
+    query = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"
+
+    # Execute the SQL query with the data
+    cur.executemany(query, data_list)
+
+    # Commit the changes to the database
+    conn.commit()
+
+    print(f'{len(data_list)} rows inserted from sheet {sheet_name} into {table_name} table.')
+
+# Close the cursor and connection
 cur.close()
 conn.close()
-
-print(f'{len(data_list)} rows inserted into {table_name} table.')
-
-
 
 In this example, the script first defines the path to the ODS file and the URL to download it from, as well as the PostgreSQL connection parameters, the database table name, and the column mapping between the ODS file and the database table.
 
